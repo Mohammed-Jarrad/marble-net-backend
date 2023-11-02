@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs')
 const { Order } = require('../models/order')
 const { Rating } = require('../models/rating')
 const { Comment } = require('../models/comment')
+const { Cart } = require('../models/cart')
 
 /** ----------------------------------------------------------------
  * @desc get all users
@@ -13,7 +14,7 @@ const { Comment } = require('../models/comment')
    -----------------------------------------------------------------
  */
 module.exports.getAllUsers = asyncHandler(async (req, res) => {
-	const users = await User.find().select('-password')
+	const users = await User.find().select('-password').populate('cart')
 	res.status(200).json(users)
 })
 
@@ -108,6 +109,7 @@ module.exports.deleteUserProfile = asyncHandler(async (req, res) => {
 	await User.findByIdAndDelete(userId)
 	await Comment.deleteMany({ user: userId })
 	await Rating.deleteMany({ user: userId })
+	await Cart.deleteMany({ user: userId })
 	res.status(200).json({ userId, username: user.username, message: 'Deleted succesfully.' })
 })
 

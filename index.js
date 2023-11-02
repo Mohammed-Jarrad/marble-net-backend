@@ -5,12 +5,6 @@ const express = require('express')
 const connect_to_database = require('./config/connect_to_database')
 const cors = require('cors')
 const { notFound, errorHandler } = require('./middlewares/error')
-const authRoutes = require('./routes/authRoutes.js')
-const userRoutes = require('./routes/userRoutes.js')
-const productRoutes = require('./routes/productRoutes')
-const commentRoutes = require('./routes/commentRoutes')
-const ratingRoutes = require('./routes/ratingRoutes')
-const orderRoutes = require('./routes/orderRoutes')
 const { welcomePage } = require('./utils/welcomePage')
 
 // connect to database
@@ -31,12 +25,13 @@ app.get(['/', '/api'], (req, res) => {
 })
 
 // routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/products', productRoutes)
-app.use('/api/comments', commentRoutes)
-app.use('/api/ratings', ratingRoutes)
-app.use('/api/orders', orderRoutes)
+app.use('/api/auth', require('./routes/authRoutes'))
+app.use('/api/users', require('./routes/userRoutes'))
+app.use('/api/products', require('./routes/productRoutes'))
+app.use('/api/comments', require('./routes/commentRoutes'))
+app.use('/api/ratings', require('./routes/ratingRoutes'))
+app.use('/api/orders', require('./routes/orderRoutes'))
+app.use('/api/carts', require('./routes/cartRoutes'))
 
 // not found routes error handler
 app.use(notFound)

@@ -15,7 +15,6 @@ const cloudinaryUploadImage = async (fileBuffer, mimeType) => {
         })
         return data
     } catch (error) {
-        console.log(error)
         throw new Error(`Internal Server Error (cloudinary): ${error.message}`)
     }
 }
