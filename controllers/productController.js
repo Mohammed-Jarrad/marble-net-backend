@@ -4,6 +4,7 @@ const { Product } = require('../models/product')
 const { Order } = require('../models/order')
 const { Comment } = require('../models/comment')
 const { Rating } = require('../models/rating')
+const { Cart } = require('../models/cart')
 
 /** ----------------------------------------------------------------
  * @desc create new product
@@ -192,6 +193,18 @@ module.exports.deleteProduct = asyncHandler(async (req, res) => {
 	await Comment.deleteMany({ product: req.params.id })
 	// delete all ratings that belong to this product
 	await Rating.deleteMany({ product: req.params.id })
+	// delete product from all carts has this product
+	await Cart.updateMany(
+		{
+			"items.product": req.params.id
+		},
+		{
+			$pull: { items: { product: req.params.id } }
+		},
+		{
+			new: true
+		}
+	)
 	// response
 	res.status(200).json({ message: 'Deleted succesfully.', productId: product._id })
 })

@@ -55,7 +55,6 @@ productSchema.virtual('ratings', {
 	foreignField: 'product',
 })
 productSchema.virtual('averageRating').get(function () {
-	console.log(this.ratings)
 	if (this?.ratings?.length == 0) {
 		return 0
 	}
