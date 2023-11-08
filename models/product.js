@@ -28,10 +28,6 @@ const productSchema = new mogoose.Schema(
 			type: String,
 			required: [true, 'Product description is required.'],
 		},
-		price: {
-			type: Number,
-			required: [true, 'Product price is required.'],
-		},
 	},
 	{
 		timestamps: true,

@@ -11,15 +11,16 @@ const { Cart } = require('../models/cart')
    -----------------------------------------------------------------
  */
 module.exports.registerController = asyncHandler(async (req, res, next) => {
-	const { username, password, role, email } = req.body
+	const { username, password, email } = req.body
+	const user = await User.create({
+		username, 
+		email,
+		password
+	})
 	const salt = await bcrypt.genSalt(10)
 	const hashedPassword = await bcrypt.hash(password, salt)
-	const user =await User.create({
-		username,
-		email,
-		role,
-		password: hashedPassword,
-	})
+	user.password = hashedPassword
+	await user.save()
 	const cart = await Cart.create({ user: user._id, items: [] })
 	user.cart = cart._id
 	await user.save()

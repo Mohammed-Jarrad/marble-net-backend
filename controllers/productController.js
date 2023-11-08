@@ -14,7 +14,7 @@ const { Cart } = require('../models/cart')
    -----------------------------------------------------------------
  */
 module.exports.createProduct = asyncHandler(async (req, res) => {
-	const { name, description, category, source, price } = req.body
+	const { name, description, category, source } = req.body
 	const image = req.file
 	if (!image) {
 		return res.status(400).json({ message: 'No image provided.' })
@@ -24,7 +24,6 @@ module.exports.createProduct = asyncHandler(async (req, res) => {
 		description,
 		category,
 		source,
-		price,
 		image: {
 			url: '',
 			publicId: '',
@@ -44,15 +43,17 @@ module.exports.createProduct = asyncHandler(async (req, res) => {
    -----------------------------------------------------------------
  */
 module.exports.getAllProducts = asyncHandler(async (req, res) => {
-	const { page = 1, limit = 12, source, category } = req.query
-	const skip = (page - 1) * limit
+	const { source, category, search } = req.query
 	const filter = {}
 	if (source) filter.source = { $in: source.split(',').map(e => e.trim()) }
 	if (category) filter.category = { $in: category.split(',').map(e => e.trim()) }
-
+	if (search) {
+		filter.$or = [
+			{ name: { $regex: new RegExp(search, 'i') } },
+			{ description: { $regex: new RegExp(search, 'i') } },
+		]
+	}
 	const products = await Product.find(filter)
-		.skip(skip)
-		.limit(parseInt(limit))
 		.sort({ createdAt: -1 })
 		.populate([
 			{ path: 'comments', populate: { path: 'user', select: 'username' } },
@@ -83,7 +84,7 @@ module.exports.getProduct = asyncHandler(async (req, res) => {
    -----------------------------------------------------------------
  */
 module.exports.updateProduct = asyncHandler(async (req, res) => {
-	const { name, source, category, description, price } = req.body
+	const { name, source, category, description } = req.body
 	const product = await Product.findById(req.params.id)
 	if (!product) {
 		return res.status(400).json({ message: 'Product not found.' })
@@ -102,7 +103,6 @@ module.exports.updateProduct = asyncHandler(async (req, res) => {
 				source,
 				category,
 				description,
-				price,
 			},
 		},
 		{
@@ -196,14 +196,14 @@ module.exports.deleteProduct = asyncHandler(async (req, res) => {
 	// delete product from all carts has this product
 	await Cart.updateMany(
 		{
-			"items.product": req.params.id
+			'items.product': req.params.id,
 		},
 		{
-			$pull: { items: { product: req.params.id } }
+			$pull: { items: { product: req.params.id } },
 		},
 		{
-			new: true
-		}
+			new: true,
+		},
 	)
 	// response
 	res.status(200).json({ message: 'Deleted succesfully.', productId: product._id })

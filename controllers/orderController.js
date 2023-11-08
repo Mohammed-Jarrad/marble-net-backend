@@ -71,7 +71,7 @@ module.exports.getOrdersForUser = asyncHandler(async (req, res) => {
 		.limit(parseInt(limit))
 		.sort({ createdAt: -1 })
 		.populate('user', 'username email')
-		.populate('products.product', 'price name')
+		.populate('products.product', 'name')
 
 	res.status(200).json(orders)
 })
@@ -147,7 +147,7 @@ module.exports.getAllOrders = asyncHandler(async (req, res) => {
 		.limit(parseInt(limit))
 		.sort({ createdAt: -1 })
 		.populate('user', 'username email')
-		.populate('products.product', 'price name')
+		.populate('products.product', 'name')
 	res.status(200).json(orders)
 })
 /** ----------------------------------------------------------------

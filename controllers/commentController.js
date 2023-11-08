@@ -10,7 +10,7 @@ const { Comment } = require('../models/comment')
  */
 module.exports.createComment = asyncHandler(async (req, res) => {
 	const { user, product, text } = req.body
-    if (req.user.id != user) {
+	if (req.user.id != user) {
 		return res
 			.status(403)
 			.json({ message: "Access denied. Can't add comment for another user. Only for you." })
@@ -20,7 +20,8 @@ module.exports.createComment = asyncHandler(async (req, res) => {
 		product,
 		text,
 	})
-	res.status(201).json(comment)
+	const populatedComment = await Comment.populate(comment, { path: "user", select: "username" })
+	res.status(201).json(populatedComment)
 })
 /** ----------------------------------------------------------------
  * @desc update comment
@@ -37,7 +38,7 @@ module.exports.updateComment = asyncHandler(async (req, res) => {
 	if (!comment) {
 		return res.status(404).json({ message: 'Comment not found.' })
 	}
-	// check if the user_id is the same of cooment_user_id
+	// check if the user_id is the same of comment_user_id
 	if (req.user.id !== comment.user.toString()) {
 		return res.status(403).json({ message: 'Access denied. Only the owner of comment.' })
 	}
@@ -53,14 +54,14 @@ module.exports.updateComment = asyncHandler(async (req, res) => {
 			new: true,
 			runValidators: true,
 		},
-	)
+	).populate('user', 'username')
 	res.status(200).json(updatedComment)
 })
 
 /** ----------------------------------------------------------------
  * @desc delete comment
  * @route /api/comments/:id
- * @method PUT
+ * @method DELETE
  * @access the owner of comment or admin or employee
    -----------------------------------------------------------------
  */
@@ -72,7 +73,11 @@ module.exports.deleteComment = asyncHandler(async (req, res) => {
 		return res.status(404).json({ message: 'Comment not found.' })
 	}
 	// check if the user_id is the same of cooment_user_id or the user is admin
-	if (req.user.id == comment.user.toString() || req.user.role == 'admin' || req.user.role == 'employee') {
+	if (
+		req.user.id == comment.user.toString() ||
+		req.user.role == 'admin' ||
+		req.user.role == 'employee'
+	) {
 		await Comment.findByIdAndDelete(id)
 		return res.status(200).json({ message: 'Deleted succesfully.' })
 	} else {
@@ -111,14 +116,9 @@ module.exports.getCommentsCount = asyncHandler(async (req, res) => {
  */
 module.exports.getCommentsForProduct = asyncHandler(async (req, res) => {
 	const productId = req.params.id
-	const { page = 1, limit = 10, sort = '-createdAt' } = req.query
-	const skip = (page - 1) * limit
+	const { sort = '-createdAt' } = req.query
 
-	const comments = await Comment.find({ product: productId })
-		.skip(skip)
-		.limit(parseInt(limit))
-		.sort(sort)
-        .populate('user', 'username')
+	const comments = await Comment.find({ product: productId }).sort(sort).populate('user', 'username')
 
 	res.status(200).json(comments)
 })

@@ -10,7 +10,7 @@ const { Rating } = require('../models/rating')
  */
 module.exports.createRate = asyncHandler(async (req, res) => {
 	const { user, product, value } = req.body
-    if (req.user.id != user) {
+	if (req.user.id != user) {
 		return res
 			.status(403)
 			.json({ message: "Access denied. Can't add rate for another user. Only for you." })
@@ -28,7 +28,7 @@ module.exports.createRate = asyncHandler(async (req, res) => {
 				new: true,
 				runValidators: true,
 			},
-		)
+		).populate('user', 'username')
 		return res.status(200).json({ message: 'We updated your rate succesfully', rate: updated })
 	}
 	const rate = await Rating.create({
@@ -36,7 +36,8 @@ module.exports.createRate = asyncHandler(async (req, res) => {
 		product,
 		value,
 	})
-	res.status(201).json(rate)
+	const populatedRate = await Rating.populate(rate, { path: 'user', select: 'username' })
+	res.status(201).json({ message: 'Your rate added succesfully.', rate: populatedRate })
 })
 
 /** ----------------------------------------------------------------
@@ -82,7 +83,7 @@ module.exports.getAllRatings = asyncHandler(async (req, res) => {
    -----------------------------------------------------------------
  */
 module.exports.getRatingsForProduct = asyncHandler(async (req, res) => {
-    const productId = req.params.id
+	const productId = req.params.id
 	const { page = 1, limit = 10, sort = '-createdAt' } = req.query
 	const skip = (page - 1) * limit
 
@@ -90,7 +91,7 @@ module.exports.getRatingsForProduct = asyncHandler(async (req, res) => {
 		.skip(skip)
 		.limit(parseInt(limit))
 		.sort(sort)
-        .populate('user', 'username')
+		.populate('user', 'username')
 
 	res.status(200).json(ratings)
 })

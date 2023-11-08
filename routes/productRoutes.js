@@ -20,7 +20,7 @@ router
 	.get(getAllProducts)
 
 // /api/products/count
-router.get('/count', verifyAdminOrEmployee, getProductsCount)
+router.get('/count', getProductsCount)
 
 // /api/products/:id
 router

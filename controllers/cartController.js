@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler')
 const { Cart } = require('../models/cart')
 
 /** ----------------------------------------------------------------
- * @desc remove item from cart
+ * @desc add item from cart
  * @route /api/carts/add
  * @method PUT
  * @access owner of the cart
@@ -26,7 +26,15 @@ module.exports.addItemToCart = asyncHandler(async (req, res) => {
 		cart.items.push({ product, quantity })
 	}
 	await cart.save()
-	res.status(200).json({ cart, message: 'Item added to cart succesfully.' })
+	const populatedCart = await Cart.populate(cart, [
+		{ path: 'user', select: 'username email' },
+		{
+			path: 'items.product',
+			select: 'name image source category ratings averageRatings',
+			populate: { path: 'ratings', select: 'value' },
+		},
+	])
+	res.status(200).json({ cart: populatedCart, message: 'Item added to cart succesfully.' })
 })
 
 /** ----------------------------------------------------------------
@@ -57,7 +65,15 @@ module.exports.removeItemFromCart = asyncHandler(async (req, res) => {
 		},
 		{ new: true },
 	)
-	res.status(200).json({ cart, message: 'Cart items removed succesfully.' })
+	const populatedCart = await Cart.populate(cart, [
+		{ path: 'user', select: 'username email' },
+		{
+			path: 'items.product',
+			select: 'name image source category ratings averageRatings',
+			populate: { path: 'ratings', select: 'value' },
+		},
+	])
+	res.status(200).json({ cart: populatedCart, message: 'Cart items removed succesfully.' })
 })
 
 /** ----------------------------------------------------------------
@@ -70,7 +86,11 @@ module.exports.removeItemFromCart = asyncHandler(async (req, res) => {
 module.exports.getCartForUser = asyncHandler(async (req, res) => {
 	const cart = await Cart.findOne({ user: req.params.id }).populate([
 		{ path: 'user', select: 'username email' },
-		{ path: 'items.product', select: 'name image source category price' },
+		{
+			path: 'items.product',
+			select: 'name image source category ratings averageRatings',
+			populate: { path: 'ratings', select: 'value' },
+		},
 	])
 	res.status(200).json(cart)
 })
@@ -114,5 +134,13 @@ module.exports.IncOrDecQuantityForProduct = asyncHandler(async (req, res) => {
 			return res.status(400).json({ message: 'Invalid operation type.' })
 	}
 	await cart.save()
-	res.status(200).json({ cart, message: 'Product quantity updated succesfully.' })
+	const populatedCart = await Cart.populate(cart, [
+		{ path: 'user', select: 'username email' },
+		{
+			path: 'items.product',
+			select: 'name image source category ratings averageRatings',
+			populate: { path: 'ratings', select: 'value' },
+		},
+	])
+	res.status(200).json({ cart: populatedCart, message: 'Product quantity updated succesfully.' })
 })

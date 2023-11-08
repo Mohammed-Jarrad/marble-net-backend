@@ -53,14 +53,6 @@ const orderSchema = new mongoose.Schema(
 	},
 )
 
-orderSchema.virtual('totalAmount').get(function () {
-	let sum = 0
-	this.products.map(item => {
-		sum += item.product.price * item.quantity
-	})
-	return sum
-})
-
 const Order = mongoose.model('Order', orderSchema)
 
 module.exports = { Order }
