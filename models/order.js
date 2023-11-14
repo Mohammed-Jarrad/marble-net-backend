@@ -23,6 +23,9 @@ const orderSchema = new mongoose.Schema(
 					required: true,
 					default: 1,
 				},
+				productNotes: {
+					type: String,
+				},
 			},
 		],
 		status: {
@@ -36,7 +39,7 @@ const orderSchema = new mongoose.Schema(
 		},
 		shippingAddress: {
 			type: String,
-			required: [true, "عنوان الطلب مطلوب."],
+			required: [true, 'عنوان الطلب مطلوب.'],
 		},
 		notes: {
 			type: String,

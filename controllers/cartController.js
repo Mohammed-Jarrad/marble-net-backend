@@ -9,7 +9,7 @@ const { Cart } = require('../models/cart')
    -----------------------------------------------------------------
  */
 module.exports.addItemToCart = asyncHandler(async (req, res) => {
-	const { cartId, product, quantity } = req.body
+	const { cartId, product, quantity, productNotes } = req.body
 	const cart = await Cart.findById(cartId)
 	if (!cart) {
 		return res.status(400).json({ message: 'غير موجود!' })
@@ -23,7 +23,7 @@ module.exports.addItemToCart = asyncHandler(async (req, res) => {
 		cart.items[itemIndex].quantity += quantity
 	} else {
 		// item doesn't exists, add it to items
-		cart.items.push({ product, quantity })
+		cart.items.push({ product, quantity, productNotes })
 	}
 	await cart.save()
 	const populatedCart = await Cart.populate(cart, [
@@ -126,7 +126,7 @@ module.exports.IncOrDecQuantityForProduct = asyncHandler(async (req, res) => {
 			if (cart.items[itemIndex].quantity > quantity) {
 				cart.items[itemIndex].quantity -= quantity
 			} else {
-				// delete the item if the giver quantity is larger than actual quantity
+				// delete the item if the given quantity is larger than actual quantity
 				cart.items.splice(itemIndex, 1)
 			}
 			break
