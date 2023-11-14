@@ -8,7 +8,7 @@ const photoUpload = multer({
         if(file.mimetype.startsWith('image')) {
             cb(null, true)
         } else {
-            cb({ message: "Unsupported file format." }, false)
+            cb({ message: "ملف غير مدعوم." }, false)
         }
     },
     limits: {

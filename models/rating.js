@@ -16,9 +16,9 @@ const ratingSchema = new mogoose.Schema(
 			type: Number,
             enum: {
                 values: [1, 2, 3, 4, 5],
-                message: "Allowed values is: 1, 2, 3, 4, 5."
+                message: "القيم المسموحة: 1، 2، 3، 4، 5."
             },
-            required: [true, 'Please add a value.']
+            required: [true, 'الرجاء قم باضافة قيمة.']
 		},
 	},
 	{

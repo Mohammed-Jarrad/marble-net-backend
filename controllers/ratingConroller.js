@@ -13,7 +13,7 @@ module.exports.createRate = asyncHandler(async (req, res) => {
 	if (req.user.id != user) {
 		return res
 			.status(403)
-			.json({ message: "Access denied. Can't add rate for another user. Only for you." })
+			.json({ message: "ممنوع الوصول، لا يمكن اضافة تقييم لمستخدم اخر، فقط لنفسك." })
 	}
 	const existRate = await Rating.findOne({ user, product })
 	if (existRate) {
@@ -29,7 +29,7 @@ module.exports.createRate = asyncHandler(async (req, res) => {
 				runValidators: true,
 			},
 		).populate('user', 'username')
-		return res.status(200).json({ message: 'We updated your rate succesfully', rate: updated })
+		return res.status(200).json({ message: 'تم تعديل التقييم بنجاح', rate: updated })
 	}
 	const rate = await Rating.create({
 		user,
@@ -37,7 +37,7 @@ module.exports.createRate = asyncHandler(async (req, res) => {
 		value,
 	})
 	const populatedRate = await Rating.populate(rate, { path: 'user', select: 'username' })
-	res.status(201).json({ message: 'Your rate added succesfully.', rate: populatedRate })
+	res.status(201).json({ message: 'تمت اضافة التقييم بنجاح.', rate: populatedRate })
 })
 
 /** ----------------------------------------------------------------
@@ -51,13 +51,13 @@ module.exports.deleteRate = asyncHandler(async (req, res) => {
 	const { id } = req.params
 	const rate = await Rating.findById(id)
 	if (!rate) {
-		return res.status(404).json({ message: 'Rating not found.' })
+		return res.status(404).json({ message: 'التقييم غير موجود.' })
 	}
 	if (req.user.id !== rate.user.toString()) {
-		return res.status(403).json({ message: 'Access denied. Only the owner of the rate.' })
+		return res.status(403).json({ message: 'ممنوع الوصول، فقط صاحب التقييم.' })
 	}
 	await Rating.findByIdAndDelete(id)
-	res.status(200).json({ message: 'Deleted succesfully.' })
+	res.status(200).json({ message: 'تم الحذف بنجاح.' })
 })
 
 /** ----------------------------------------------------------------

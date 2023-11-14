@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema(
 		},
 		userPhone: {
 			type: String,
-			required: [true, 'User phone number is required.'],
+			required: [true, 'رقم الهاتف مطلوب.'],
 		},
 		products: [
 			{
@@ -29,14 +29,14 @@ const orderSchema = new mongoose.Schema(
 			type: String,
 			enum: {
 				values: ['pending', 'confirmed', 'shipped', 'canceled'],
-				message: 'Status allowed values: pending, confirmed, shipped, canceled.',
+				message: 'الحالات المسموحة: قيد الانتظار، تم التأكيد، تم التوصيل، ملغي.',
 			},
 			default: 'pending',
-			required: [true, 'Order status is required.'],
+			required: [true, 'حالة الطلب مطلوبة.'],
 		},
 		shippingAddress: {
 			type: String,
-			required: [true, "Order address is required."],
+			required: [true, "عنوان الطلب مطلوب."],
 		},
 		notes: {
 			type: String,

@@ -4,30 +4,30 @@ const jwt = require('jsonwebtoken')
 const userSchema = new mongoose.Schema({
 	username: {
 		type: String,
-		required: [true, 'Username is required.'],
+		required: [true, 'الاسم مطلوب.'],
 		unique: true,
-		minLength: [3, 'Username must be at least 3 characters.'],
+		minLength: [3, 'يجب ان يكون الاسم 3 رموز على الاقل.'],
 		trim: true,
 	},
 	email: {
 		type: String,
-		required: [true, 'Email is required.'],
-		match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address.'],
+		required: [true, 'البريد الالكتروني مطلوب.'],
+		match: [/^\S+@\S+\.\S+$/, 'الرجاء قم بادخال بريد الكتروني صالح.'],
 		unique: true,
 		lowercase: true,
 	},
 	password: {
 		type: String,
-		required: [true, 'Password is required.'],
-		minLength: [6, 'Password must be at least 6 characters.'],
+		required: [true, 'كلمة المرور مطلوبة.'],
+		minLength: [6, 'يجب ان تكون كلمة المرور من 6 رموز على الاقل.'],
 	},
 	role: {
 		type: String,
 		enum: {
 			values: ['admin', 'employee', 'customer'],
-			message: 'Role is either admin, employee, or customer.',
+			message: 'القيم المسموحة: admin, employee, customer.',
 		},
-		required: [true, 'Role is required.'],
+		required: [true, 'حالة المستخدم مطلوبة.'],
 		default: 'customer',
 	},
 	cart: {

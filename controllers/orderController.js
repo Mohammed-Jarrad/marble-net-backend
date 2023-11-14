@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler')
 const { Order } = require('../models/order')
+const { Cart } = require('../models/cart')
 
 /** ----------------------------------------------------------------
  * @desc Create a new order
@@ -13,7 +14,7 @@ module.exports.createOrder = asyncHandler(async (req, res) => {
 	if (req.user.id != user) {
 		return res
 			.status(403)
-			.json({ message: "Access denied. Can't create order for another user. Only for you." })
+			.json({ message: "ممنوع الوصول. المستخدم يستطيع انشاء طلب لحسابه فقط." })
 	}
 	const order = await Order.create({
 		user,
@@ -22,7 +23,11 @@ module.exports.createOrder = asyncHandler(async (req, res) => {
 		shippingAddress,
 		notes,
 	})
-	res.status(201).json(order)
+	// clear the cart items after creating the order
+	const cart = await Cart.findOne({ user })
+	cart.items = []
+	await cart.save()
+	res.status(201).json({ order, cart, message: 'تم انشاء الطلب بنجاح.' })
 })
 
 /** ----------------------------------------------------------------
@@ -38,12 +43,16 @@ module.exports.getOrderById = asyncHandler(async (req, res) => {
 		{ path: 'products.product' },
 	])
 	if (!order) {
-		return res.status(404).json({ message: 'Order not found.' })
+		return res.status(404).json({ message: 'الطلب غير موجود.' })
 	}
-	if (req.user.id === order.user.toString() || req.user.role == 'admin' || req.user.role == 'employee') {
-		return res.status(200).json(order)
+	if (
+		req.user.id !== order.user._id.toString() &&
+		req.user.role !== 'admin' &&
+		req.user.role !== 'employee'
+	) {
+		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب الطلب او الادمن او الموظف.' })
 	}
-	return res.status(403).json({ message: 'Access denied. Only owner or admin.' })
+	res.status(200).json(order)
 })
 
 /** ----------------------------------------------------------------
@@ -55,23 +64,18 @@ module.exports.getOrderById = asyncHandler(async (req, res) => {
  */
 module.exports.getOrdersForUser = asyncHandler(async (req, res) => {
 	const userId = req.params.id
-    if (req.user.id != userId && req.user.role != 'admin' && req.user.role != 'employee') {
+	if (req.user.id != userId && req.user.role != 'admin' && req.user.role != 'employee') {
 		return res
 			.status(403)
-			.json({ message: "Access denied. Can't get orders for another user. Only for you." })
+			.json({ message: "ممنوع الوصول. لا يمكن الحصول على طلبات المستخدمين الآخرين." })
 	}
-	const { page = 1, limit = 10, status } = req.query
-	const skip = (page - 1) * limit
-
+	const { status } = req.query
 	const filter = { user: userId }
 	if (status) filter.status = status
-
 	const orders = await Order.find(filter)
-		.skip(skip)
-		.limit(parseInt(limit))
 		.sort({ createdAt: -1 })
 		.populate('user', 'username email')
-		.populate('products.product', 'name')
+		.populate('products.product', 'name source category image')
 
 	res.status(200).json(orders)
 })
@@ -98,7 +102,7 @@ module.exports.updateOrderStatus = asyncHandler(async (req, res) => {
 		},
 	).populate([{ path: 'user', select: 'username email' }, { path: 'products.product' }])
 	if (!order) {
-		return res.status(404).json({ message: 'Order not found.' })
+		return res.status(404).json({ message: 'الطلب غير موجود.' })
 	}
 	res.status(200).json(order)
 })
@@ -124,7 +128,7 @@ module.exports.updateOrderNote = asyncHandler(async (req, res) => {
 		},
 	).populate([{ path: 'user', select: 'username email' }, { path: 'products.product' }])
 	if (!order) {
-		return res.status(404).json({ message: 'Order not found.' })
+		return res.status(404).json({ message: 'الطلب غير موجود.' })
 	}
 	res.status(200).json(order)
 })
@@ -137,17 +141,14 @@ module.exports.updateOrderNote = asyncHandler(async (req, res) => {
    -----------------------------------------------------------------
  */
 module.exports.getAllOrders = asyncHandler(async (req, res) => {
-	const { page = 1, limit = 10, status } = req.query
-	const skip = (page - 1) * limit
+	const { status } = req.query
 	const filter = {}
 	if (status) filter.status = status
 
 	const orders = await Order.find(filter)
-		.skip(skip)
-		.limit(parseInt(limit))
 		.sort({ createdAt: -1 })
 		.populate('user', 'username email')
-		.populate('products.product', 'name')
+		.populate('products.product', 'name source category image')
 	res.status(200).json(orders)
 })
 /** ----------------------------------------------------------------
@@ -161,8 +162,8 @@ module.exports.deleteOrder = asyncHandler(async (req, res) => {
 	const { id } = req.params
 	const order = await Order.findById(id)
 	if (!order) {
-		return res.status(404).json({ message: 'Order not found.' })
+		return res.status(404).json({ message: 'الطلب غير موجود.' })
 	}
 	await Order.findByIdAndDelete(id)
-	res.status(200).json({ message: 'Order deleted succesfully.' })
+	res.status(200).json({ message: 'تم الحذف بنجاح.', orderId: id })
 })

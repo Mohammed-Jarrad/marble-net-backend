@@ -13,7 +13,7 @@ module.exports.createComment = asyncHandler(async (req, res) => {
 	if (req.user.id != user) {
 		return res
 			.status(403)
-			.json({ message: "Access denied. Can't add comment for another user. Only for you." })
+			.json({ message: "ممنوع الوصول. المستخدم يستطيع اضافة تعليق لحسابه فقط." })
 	}
 	const comment = await Comment.create({
 		user,
@@ -36,11 +36,11 @@ module.exports.updateComment = asyncHandler(async (req, res) => {
 	// check if the comment founded
 	const comment = await Comment.findById(id)
 	if (!comment) {
-		return res.status(404).json({ message: 'Comment not found.' })
+		return res.status(404).json({ message: 'التعليق غير موجود.' })
 	}
 	// check if the user_id is the same of comment_user_id
 	if (req.user.id !== comment.user.toString()) {
-		return res.status(403).json({ message: 'Access denied. Only the owner of comment.' })
+		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب التعليق.' })
 	}
 	// update comment
 	const updatedComment = await Comment.findByIdAndUpdate(
@@ -70,7 +70,7 @@ module.exports.deleteComment = asyncHandler(async (req, res) => {
 	// check if the comment founded
 	const comment = await Comment.findById(id)
 	if (!comment) {
-		return res.status(404).json({ message: 'Comment not found.' })
+		return res.status(404).json({ message: 'التعليق غير موجود.' })
 	}
 	// check if the user_id is the same of cooment_user_id or the user is admin
 	if (
@@ -79,9 +79,9 @@ module.exports.deleteComment = asyncHandler(async (req, res) => {
 		req.user.role == 'employee'
 	) {
 		await Comment.findByIdAndDelete(id)
-		return res.status(200).json({ message: 'Deleted succesfully.' })
+		return res.status(200).json({ message: 'تم الحذف بنجاح.' })
 	} else {
-		return res.status(403).json({ message: 'Access denied. Only the owner of comment or admin.' })
+		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب التعليق او الأدمن.' })
 	}
 })
 /** ----------------------------------------------------------------

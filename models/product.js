@@ -5,11 +5,11 @@ const productSchema = new mogoose.Schema(
 	{
 		name: {
 			type: String,
-			required: [true, 'Product name is required.'],
+			required: [true, 'اسم المنتج مطلوب.'],
 		},
 		source: {
 			type: String,
-			required: [true, 'Product source is required.'],
+			required: [true, 'مصدر المنتج مطلوب.'],
 			lowercase: true,
 		},
 		image: {
@@ -17,16 +17,16 @@ const productSchema = new mogoose.Schema(
 				url: String,
 				publicId: String,
 			},
-			required: [true, 'Product image is required.'],
+			required: [true, 'صورة المنتج مطلوبة.'],
 		},
 		category: {
 			type: String,
-			required: [true, 'Product category is required.'],
+			required: [true, 'فئة المنتج مطلوبة.'],
 			lowercase: true,
 		},
 		description: {
 			type: String,
-			required: [true, 'Product description is required.'],
+			required: [true, 'وصف المنتج مطلوب.'],
 		},
 	},
 	{

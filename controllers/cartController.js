@@ -12,10 +12,10 @@ module.exports.addItemToCart = asyncHandler(async (req, res) => {
 	const { cartId, product, quantity } = req.body
 	const cart = await Cart.findById(cartId)
 	if (!cart) {
-		return res.status(400).json({ message: 'Cart not found.' })
+		return res.status(400).json({ message: 'غير موجود!' })
 	}
 	if (req.user.id !== cart.user.toString()) {
-		return res.status(403).json({ message: 'Access denied. Only cart owner allowed to add items.' })
+		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب السلة يستطيع الاضافة عليها.' })
 	}
 	const itemIndex = cart.items.findIndex(item => item.product.toString() == product)
 	if (itemIndex !== -1) {
@@ -34,7 +34,7 @@ module.exports.addItemToCart = asyncHandler(async (req, res) => {
 			populate: { path: 'ratings', select: 'value' },
 		},
 	])
-	res.status(200).json({ cart: populatedCart, message: 'Item added to cart succesfully.' })
+	res.status(200).json({ cart: populatedCart, message: 'تمت اضافة المنتج بنجاح.' })
 })
 
 /** ----------------------------------------------------------------
@@ -49,14 +49,14 @@ module.exports.removeItemFromCart = asyncHandler(async (req, res) => {
 
 	const _cart = await Cart.findById(cartId)
 	if (!_cart) {
-		return res.status(404).json({ message: 'Cart not found.' })
+		return res.status(404).json({ message: 'غير موجود!' })
 	}
 	if (req.user.id !== _cart.user.toString()) {
-		return res.status(403).json({ message: 'Access denied. Only owner of the cart can delete items.' })
+		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب السلة يستطيع الحذف منها.' })
 	}
 	const itemIndex = _cart.items.findIndex(item => item.product.toString() === product)
 	if (itemIndex === -1) {
-		return res.status(400).json({ message: 'Product not found in the cart.' })
+		return res.status(400).json({ message: 'المنتج غير موجود في السلة!' })
 	}
 	const cart = await Cart.findByIdAndUpdate(
 		cartId,
@@ -73,7 +73,7 @@ module.exports.removeItemFromCart = asyncHandler(async (req, res) => {
 			populate: { path: 'ratings', select: 'value' },
 		},
 	])
-	res.status(200).json({ cart: populatedCart, message: 'Cart items removed succesfully.' })
+	res.status(200).json({ cart: populatedCart, message: 'تمت ازالة العنصر من السلة.' })
 })
 
 /** ----------------------------------------------------------------
@@ -106,16 +106,16 @@ module.exports.IncOrDecQuantityForProduct = asyncHandler(async (req, res) => {
 	const { type, product, quantity, cartId } = req.body
 	const cart = await Cart.findById(cartId)
 	if (!cart) {
-		return res.status(404).json({ message: 'Cart not found.' })
+		return res.status(404).json({ message: 'غير موجود!' })
 	}
 	if (req.user.id !== cart.user.toString()) {
 		return res
 			.status(403)
-			.json({ message: 'Access denied. Only owner of the cart can increase or decrease the quantity.' })
+			.json({ message: 'ممنوع الوصول. فقط صاحب السلة يستطيع زيادة او تخفيض كمية المنتجات.' })
 	}
 	const itemIndex = cart.items.findIndex(item => item.product.toString() == product)
 	if (itemIndex == -1) {
-		return res.status(404).json({ message: 'Product not found in the cart.' })
+		return res.status(404).json({ message: 'المنتج غير موجود في السلة.' })
 	}
 	switch (type) {
 		case 'increase':
@@ -131,7 +131,7 @@ module.exports.IncOrDecQuantityForProduct = asyncHandler(async (req, res) => {
 			}
 			break
 		default:
-			return res.status(400).json({ message: 'Invalid operation type.' })
+			return res.status(400).json({ message: 'عملية غير صحيحة.' })
 	}
 	await cart.save()
 	const populatedCart = await Cart.populate(cart, [
@@ -142,5 +142,5 @@ module.exports.IncOrDecQuantityForProduct = asyncHandler(async (req, res) => {
 			populate: { path: 'ratings', select: 'value' },
 		},
 	])
-	res.status(200).json({ cart: populatedCart, message: 'Product quantity updated succesfully.' })
+	res.status(200).json({ cart: populatedCart, message: 'تم تعديل الكمية بنجاح.' })
 })

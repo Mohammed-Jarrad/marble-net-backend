@@ -13,9 +13,9 @@ const { Cart } = require('../models/cart')
 module.exports.registerController = asyncHandler(async (req, res, next) => {
 	const { username, password, email } = req.body
 	const user = await User.create({
-		username, 
+		username,
 		email,
-		password
+		password,
 	})
 	const salt = await bcrypt.genSalt(10)
 	const hashedPassword = await bcrypt.hash(password, salt)
@@ -24,7 +24,7 @@ module.exports.registerController = asyncHandler(async (req, res, next) => {
 	const cart = await Cart.create({ user: user._id, items: [] })
 	user.cart = cart._id
 	await user.save()
-	return res.status(201).json({ message: 'Your account has been created succesfully.' })
+	return res.status(201).json({ message: 'تم انشاء حساب بنجاح.' })
 })
 /** ----------------------------------------------------------------
  * @desc Log In User
@@ -36,16 +36,17 @@ module.exports.registerController = asyncHandler(async (req, res, next) => {
 module.exports.loginController = asyncHandler(async (req, res) => {
 	const { password, email } = req.body
 	let user = await User.findOne({ email })
-	if (!user) return res.status(400).json({ message: 'Invalid email.' })
+	if (!user) return res.status(400).json({ message: 'بريد الكتروني خاطىء.' })
 	const isCorrectPassword = await bcrypt.compare(password, user.password)
-	if (!isCorrectPassword) return res.status(400).json({ message: 'Invalid password.' })
+	if (!isCorrectPassword) return res.status(400).json({ message: 'كلمة مرور خاطئة.' })
 
 	const token = user.generateAuthToken()
+	const { username, _id, role, cart } = user
 	return res.status(200).json({
-		_id: user._id,
-		username: user.username,
-		role: user.role,
+		username,
+		cart,
+		role,
+		_id,
 		token,
-		cart: user.cart,
 	})
 })

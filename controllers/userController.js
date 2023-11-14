@@ -28,7 +28,7 @@ module.exports.getAllUsers = asyncHandler(async (req, res) => {
 module.exports.getUserProfile = asyncHandler(async (req, res) => {
 	const user = await User.findById(req.params.id).select('-password')
 	if (!user) {
-		return res.status(404).json({ message: 'User not found.' })
+		return res.status(404).json({ message: 'المستخدم غير موجود.' })
 	}
 	res.status(200).json(user)
 })
@@ -43,29 +43,45 @@ module.exports.getUserProfile = asyncHandler(async (req, res) => {
 module.exports.updateUserPorfile = asyncHandler(async (req, res) => {
 	const user = await User.findById(req.params.id)
 	if (!user) {
-		return res.status(404).json({ message: 'User not found.' })
+		return res.status(404).json({ message: 'المستخدم غير موجود.' })
 	}
+	let updatedUser
 	if (req.body.password) {
 		if (req.body.password.length < 6) {
-			return res.status(400).json({ message: 'Password must be at least 6 characters long.' })
+			return res.status(400).json({ message: 'كلمة المرور يجب ان تكون 6 حروف على الاقل.' })
 		}
 		const salt = await bcrypt.genSalt(10)
 		req.body.password = await bcrypt.hash(req.body.password, salt)
-	}
-	const updatedUser = await User.findByIdAndUpdate(
-		req.params.id,
-		{
-			$set: {
-				username: req.body.username,
-				password: req.body.password,
+		updatedUser = await User.findByIdAndUpdate(
+			req.params.id,
+			{
+				$set: {
+					username: req.body.username,
+					password: req.body.password,
+					email: req.body.email,
+				},
 			},
-		},
-		{
-			new: true,
-			runValidators: true,
-		},
-	).select('-password')
-	res.status(200).json(updatedUser)
+			{
+				new: true,
+				runValidators: true,
+			},
+		).select('-password')
+	} else {
+		updatedUser = await User.findByIdAndUpdate(
+			req.params.id,
+			{
+				$set: {
+					username: req.body.username,
+					email: req.body.email,
+				},
+			},
+			{
+				new: true,
+				runValidators: true,
+			},
+		).select('-password')
+	}
+	res.status(200).json({ user: updatedUser, message: 'تم تعديل معلومات المستخدم بنجاح.' })
 })
 
 /** ----------------------------------------------------------------
@@ -91,7 +107,7 @@ module.exports.deleteUserProfile = asyncHandler(async (req, res) => {
 	const userId = req.params.id
 	const user = await User.findById(userId)
 	if (!user) {
-		return res.status(404).json({ message: 'User not found.' })
+		return res.status(404).json({ message: 'المستخدم غير موجود.' })
 	}
 	const isAuthorized =
 		req.user.role == 'admin' ||
@@ -100,17 +116,14 @@ module.exports.deleteUserProfile = asyncHandler(async (req, res) => {
 		(user.role == 'customer' && req.user.role == 'customer' && req.user.id == userId)
 
 	if (!isAuthorized) {
-		return res.status(403).json({ message: 'Access denied.' })
-	}
-	const orders = await Order.find({ user: userId })
-	if (orders.length > 0) {
-		return res.status(400).json({ message: "Can't delete this user, This user has at least one order." })
+		return res.status(403).json({ message: 'ممنوع الوصول.' })
 	}
 	await User.findByIdAndDelete(userId)
 	await Comment.deleteMany({ user: userId })
 	await Rating.deleteMany({ user: userId })
 	await Cart.deleteMany({ user: userId })
-	res.status(200).json({ userId, username: user.username, message: 'Deleted succesfully.' })
+	await Order.deleteMany({ user: userId }) // new
+	res.status(200).json({ userId, username: user.username, message: 'تم الحذف بنجاح.' })
 })
 
 /** ----------------------------------------------------------------
@@ -135,7 +148,7 @@ module.exports.changeUserRole = asyncHandler(async (req, res) => {
 		},
 	)
 	if (!user) {
-		return res.status(404).json({ message: 'User not found.' })
+		return res.status(404).json({ message: 'المستخدم غير موجود.' })
 	}
-	res.status(200).json({ user, message: 'User role changed succesfully.' })
+	res.status(200).json({ user, message: 'تم تعديل حالة المستخدم.' })
 })

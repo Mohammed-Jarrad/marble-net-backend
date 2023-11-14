@@ -14,7 +14,7 @@ const commentSchema = new mogoose.Schema(
         },
 		text: {
             type: String,
-            required: [true, "Please write somthing."]
+            required: [true, "الرجاء قم بادخال نص."]
         },
 	},
 	{

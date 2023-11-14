@@ -17,7 +17,7 @@ module.exports.createProduct = asyncHandler(async (req, res) => {
 	const { name, description, category, source } = req.body
 	const image = req.file
 	if (!image) {
-		return res.status(400).json({ message: 'No image provided.' })
+		return res.status(400).json({ message: 'الرجاء ارفاق صورة.' })
 	}
 	const product = new Product({
 		name,
@@ -33,7 +33,7 @@ module.exports.createProduct = asyncHandler(async (req, res) => {
 	const result = await cloudinaryUploadImage(image.buffer, image.mimetype)
 	product.image = new Object({ url: result.secure_url, publicId: result.public_id })
 	await product.save()
-	res.status(201).json({ product, message: 'Created succesfully.' })
+	res.status(201).json({ product, message: 'تم الانشاء بنجاح.' })
 })
 /** ----------------------------------------------------------------
  * @desc get all product
@@ -87,13 +87,13 @@ module.exports.updateProduct = asyncHandler(async (req, res) => {
 	const { name, source, category, description } = req.body
 	const product = await Product.findById(req.params.id)
 	if (!product) {
-		return res.status(400).json({ message: 'Product not found.' })
+		return res.status(400).json({ message: 'المنتج غير موجود.' })
 	}
-	const orders = await Order.find({ product: req.params.id })
+	const orders = await Order.find({ 'products.product': req.params.id })
 	if (orders.length > 0) {
 		return res
 			.status(400)
-			.json({ message: "Can't update this product. This product has at lease one order." })
+			.json({ message: "لا يمكن التعديل على هذا المنتج، هذا المنتج لديه على الاقل طلب واحد." })
 	}
 	const updatedProduct = await Product.findByIdAndUpdate(
 		req.params.id,
@@ -113,7 +113,7 @@ module.exports.updateProduct = asyncHandler(async (req, res) => {
 		{ path: 'comments', populate: { path: 'user', select: 'username' } },
 		{ path: 'ratings', populate: { path: 'user', select: 'username' } },
 	])
-	res.status(200).json({ product: updatedProduct, message: 'Product updated succesfully.' })
+	res.status(200).json({ product: updatedProduct, message: 'تم التعديل بنجاح.' })
 })
 /** ----------------------------------------------------------------
  * @desc update product image
@@ -125,35 +125,39 @@ module.exports.updateProduct = asyncHandler(async (req, res) => {
 module.exports.updateProductImage = asyncHandler(async (req, res) => {
 	const image = req.file
 	if (!image) {
-		return res.status(400).json({ message: 'No image provided.' })
+		return res.status(400).json({ message: 'الرجاء ارفاق صورة.' })
 	}
 	const product = await Product.findById(req.params.id)
 	if (!product) {
-		return res.status(404).json({ message: 'Product not found.' })
+		return res.status(404).json({ message: 'المنتج غير موجود.' })
 	}
-	const orders = await Order.find({ product: req.params.id })
+	const orders = await Order.find({ 'products.product': req.params.id })
 	if (orders.length > 0) {
 		return res
 			.status(400)
-			.json({ message: "Can't update this product image. This product has at lease one order." })
+			.json({ message: "لا يمكن تعديل صورة هذا المنتج. لان هذا المنتج يحتوي على الاقل على طلب واحد." })
 	}
 	// delete old image
 	await cloudinaryRemoveImage(product.image.publicId)
 	// upload new image
 	const result = await cloudinaryUploadImage(image.buffer, image.mimetype)
 	// edit product image feilds
-	const updatedProduct = await Product.findByIdAndUpdate(req.params.id, {
-		$set: {
-			image: {
-				url: result.secure_url,
-				publicId: result.public_id,
+	const updatedProduct = await Product.findByIdAndUpdate(
+		req.params.id,
+		{
+			$set: {
+				image: {
+					url: result.secure_url,
+					publicId: result.public_id,
+				},
 			},
 		},
-	}).populate([
+		{ new: true },
+	).populate([
 		{ path: 'comments', populate: { path: 'user', select: 'username' } },
 		{ path: 'ratings', populate: { path: 'user', select: 'username' } },
 	])
-	res.status(200).json({ product: updatedProduct, message: 'Product image updated succesfully.' })
+	res.status(200).json({ product: updatedProduct, message: 'تم تعديل الصورة بنجاح.' })
 })
 /** ----------------------------------------------------------------
  * @desc get products count 
@@ -177,13 +181,14 @@ module.exports.getProductsCount = asyncHandler(async (req, res) => {
 module.exports.deleteProduct = asyncHandler(async (req, res) => {
 	const product = await Product.findById(req.params.id)
 	if (!product) {
-		return res.status(404).json({ message: 'Product not found.' })
+		return res.status(404).json({ message: 'المنتج غير موجود.' })
 	}
-	const orders = await Order.find({ product: req.params.id })
+	console.log(product._id)
+	const orders = await Order.find({ 'products.product': product._id })
 	if (orders.length > 0) {
 		return res
 			.status(400)
-			.json({ message: "Can't delete this product. This product has at lease one order." })
+			.json({ message: "لا يمكن حذف هذا المنتج، هذا المنتج لديه طلب واحد على الاقل." })
 	}
 	// deletr product
 	await Product.findByIdAndDelete(req.params.id)
@@ -206,5 +211,5 @@ module.exports.deleteProduct = asyncHandler(async (req, res) => {
 		},
 	)
 	// response
-	res.status(200).json({ message: 'Deleted succesfully.', productId: product._id })
+	res.status(200).json({ message: 'تم الحذف بنجاح.', productId: product._id })
 })
