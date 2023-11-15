@@ -1,5 +1,5 @@
 require('dotenv').config({
-	path: process.env.NODE_ENV.trim() == 'production' ? '.env.production' : '.env.development',
+	path: process.env.NODE_ENV == 'production' ? '.env.production' : '.env.development',
 })
 const express = require('express')
 const connect_to_database = require('./config/connect_to_database')
@@ -39,6 +39,6 @@ app.use(notFound)
 app.use(errorHandler)
 
 app.listen(process.env.PORT || 4040, () => {
-	if (process.env.NODE_ENV.trim() == 'production') console.log('Server is running')
+	if (process.env.NODE_ENV == 'production') console.log('Server is running')
 	else console.log(`Server is running on http://localhost:${process.env.PORT}`)
 })
