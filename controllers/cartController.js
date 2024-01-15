@@ -14,7 +14,7 @@ module.exports.addItemToCart = asyncHandler(async (req, res) => {
 	if (!cart) {
 		return res.status(400).json({ message: 'غير موجود!' })
 	}
-	if (req.user.id !== cart.user.toString()) {
+	if (req.user.id.toString() !== cart.user.toString()) {
 		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب السلة يستطيع الاضافة عليها.' })
 	}
 	const itemIndex = cart.items.findIndex(item => item.product.toString() == product)
@@ -51,7 +51,7 @@ module.exports.removeItemFromCart = asyncHandler(async (req, res) => {
 	if (!_cart) {
 		return res.status(404).json({ message: 'غير موجود!' })
 	}
-	if (req.user.id !== _cart.user.toString()) {
+	if (req.user.id.toString() !== _cart.user.toString()) {
 		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب السلة يستطيع الحذف منها.' })
 	}
 	const itemIndex = _cart.items.findIndex(item => item.product.toString() === product)
@@ -108,7 +108,7 @@ module.exports.IncOrDecQuantityForProduct = asyncHandler(async (req, res) => {
 	if (!cart) {
 		return res.status(404).json({ message: 'غير موجود!' })
 	}
-	if (req.user.id !== cart.user.toString()) {
+	if (req.user.id.toString() !== cart.user.toString()) {
 		return res
 			.status(403)
 			.json({ message: 'ممنوع الوصول. فقط صاحب السلة يستطيع زيادة او تخفيض كمية المنتجات.' })

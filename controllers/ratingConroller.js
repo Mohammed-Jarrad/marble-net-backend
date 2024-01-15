@@ -10,7 +10,7 @@ const { Rating } = require('../models/rating')
  */
 module.exports.createRate = asyncHandler(async (req, res) => {
 	const { user, product, value } = req.body
-	if (req.user.id != user) {
+	if (req.user.id.toString() != user) {
 		return res
 			.status(403)
 			.json({ message: "ممنوع الوصول، لا يمكن اضافة تقييم لمستخدم اخر، فقط لنفسك." })
@@ -53,7 +53,7 @@ module.exports.deleteRate = asyncHandler(async (req, res) => {
 	if (!rate) {
 		return res.status(404).json({ message: 'التقييم غير موجود.' })
 	}
-	if (req.user.id !== rate.user.toString()) {
+	if (req.user.id.toString() !== rate.user.toString()) {
 		return res.status(403).json({ message: 'ممنوع الوصول، فقط صاحب التقييم.' })
 	}
 	await Rating.findByIdAndDelete(id)

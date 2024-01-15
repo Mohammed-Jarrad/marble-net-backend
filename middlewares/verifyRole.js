@@ -1,82 +1,87 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { User } = require('../models/user');
 
-const verifyToken = (req, res, next) => {
-	const authToken = req.headers.authorization
+const verifyToken = async (req, res, next) => {
+	const authToken = req.headers.authorization;
 	if (!authToken) {
-		return res.status(401).json({ message: 'ممنوع الوصول، لا يوجد رمز.' })
+		return res.status(401).json({ message: 'ممنوع الوصول، لا يوجد رمز.' });
 	}
-	const token = authToken.split(' ')[1]
+	const token = authToken.split(' ')[1];
 	try {
-		const decode = jwt.verify(token, process.env.JWT_SECURITY)
-		req.user = decode
-		next()
+		const decode = jwt.verify(token, process.env.JWT_SECURITY);
+		const user = await User.findById(decode.id);
+		if (!user) return res.status(404).json('المستخدم غير صالح');
+		req.user = { id: user._id, role: user.role };
+		next();
 	} catch (error) {
-		return res.status(401).json({ message: 'ممنوع الوصول، رمز غير صالح.' })
+		return res.status(401).json({ message: 'ممنوع الوصول، رمز غير صالح.' });
 	}
-}
+};
 
 const roleCheck = (req, allowedRoles) => {
 	if (!allowedRoles.includes(req.user.role)) {
-		return false
+		return false;
 	}
-	return true
-}
+	return true;
+};
 
 const verifyAdmin = (req, res, next) => {
 	verifyToken(req, res, () => {
 		if (!roleCheck(req, ['admin'])) {
-			return res.status(403).json({ message: `ممنوع الوصول، الحالات المسموحة: الادمن.` })
+			return res.status(403).json({ message: `ممنوع الوصول، الحالات المسموحة: الادمن.` });
 		}
-		next()
-	})
-}
+		next();
+	});
+};
 
 const verifyEmployee = (req, res, next) => {
 	verifyToken(req, res, () => {
 		if (!roleCheck(req, ['employee'])) {
-			return res.status(403).json({ message: `ممنوع الوصول، الحالات المسموحة: الموظف.` })
+			return res.status(403).json({ message: `ممنوع الوصول، الحالات المسموحة: الموظف.` });
 		}
-		next()
-	})
-}
+		next();
+	});
+};
 
 const verifyAdminOrEmployee = (req, res, next) => {
 	verifyToken(req, res, () => {
 		if (!roleCheck(req, ['admin', 'employee'])) {
-			return res.status(403).json({ message: `ممنوع الوصول، الحالات المسموحة: الادمن، الموظف.` })
+			return res.status(403).json({ message: `ممنوع الوصول، الحالات المسموحة: الادمن، الموظف.` });
 		}
-		next()
-	})
-}
+		next();
+	});
+};
 
 const verifyUserHimself = (req, res, next) => {
 	verifyToken(req, res, () => {
-		if (req.user.id !== req.params.id) {
-			return res.status(403).json({ message: 'ممنوع الوصول، الحالات المسموحة: المستخدم نفسه.' })
+		if (req.user.id.toString() !== req.params.id) {
+			return res.status(403).json({ message: 'ممنوع الوصول، الحالات المسموحة: المستخدم نفسه.' });
 		}
-		next()
-	})
-}
+		next();
+	});
+};
 
 const verifyUserHimselfOrAdmin = (req, res, next) => {
 	verifyToken(req, res, () => {
-		if (req.user.id === req.params.id || req.user.role === 'admin') {
-			next()
+		if (req.user.id.toString() === req.params.id || req.user.role === 'admin') {
+			next();
 		} else {
-			return res.status(403).json({ message: 'ممنوع الوصول، الحالات المسموحة: المستخدم نفسه، الادمن.' })
+			return res.status(403).json({ message: 'ممنوع الوصول، الحالات المسموحة: المستخدم نفسه، الادمن.' });
 		}
-	})
-}
+	});
+};
 
 const verifyUserHimselfOrAdminOrEmployee = (req, res, next) => {
 	verifyToken(req, res, () => {
-		if (req.user.id === req.params.id || req.user.role === 'admin' || req.user.role === 'employee') {
-			next()
+		if (req.user.id.toString() === req.params.id || req.user.role === 'admin' || req.user.role === 'employee') {
+			next();
 		} else {
-			return res.status(403).json({ message: 'ممنوع الوصول، الحالات المسموحة: المستخدم نفسه، الموظف، الادمن.' })
+			return res
+				.status(403)
+				.json({ message: 'ممنوع الوصول، الحالات المسموحة: المستخدم نفسه، الموظف، الادمن.' });
 		}
-	})
-}
+	});
+};
 
 module.exports = {
 	verifyToken,
@@ -86,4 +91,4 @@ module.exports = {
 	verifyUserHimselfOrAdmin,
 	verifyUserHimselfOrAdminOrEmployee,
 	verifyAdminOrEmployee,
-}
+};

@@ -10,7 +10,7 @@ const { Comment } = require('../models/comment')
  */
 module.exports.createComment = asyncHandler(async (req, res) => {
 	const { user, product, text } = req.body
-	if (req.user.id != user) {
+	if (req.user.id.toString() != user) {
 		return res
 			.status(403)
 			.json({ message: "ممنوع الوصول. المستخدم يستطيع اضافة تعليق لحسابه فقط." })
@@ -39,7 +39,7 @@ module.exports.updateComment = asyncHandler(async (req, res) => {
 		return res.status(404).json({ message: 'التعليق غير موجود.' })
 	}
 	// check if the user_id is the same of comment_user_id
-	if (req.user.id !== comment.user.toString()) {
+	if (req.user.id.toString() !== comment.user.toString()) {
 		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب التعليق.' })
 	}
 	// update comment
@@ -74,7 +74,7 @@ module.exports.deleteComment = asyncHandler(async (req, res) => {
 	}
 	// check if the user_id is the same of cooment_user_id or the user is admin
 	if (
-		req.user.id == comment.user.toString() ||
+		req.user.id.toString() == comment.user.toString() ||
 		req.user.role == 'admin' ||
 		req.user.role == 'employee'
 	) {

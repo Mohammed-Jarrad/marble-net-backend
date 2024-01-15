@@ -11,7 +11,7 @@ const { Cart } = require('../models/cart')
  */
 module.exports.createOrder = asyncHandler(async (req, res) => {
 	const { user, products, userPhone, shippingAddress, notes } = req.body
-	if (req.user.id != user) {
+	if (req.user.id.toString() != user) {
 		return res
 			.status(403)
 			.json({ message: "ممنوع الوصول. المستخدم يستطيع انشاء طلب لحسابه فقط." })
@@ -64,7 +64,7 @@ module.exports.getOrderById = asyncHandler(async (req, res) => {
  */
 module.exports.getOrdersForUser = asyncHandler(async (req, res) => {
 	const userId = req.params.id
-	if (req.user.id != userId && req.user.role != 'admin' && req.user.role != 'employee') {
+	if (req.user.id.toString() != userId && req.user.role != 'admin' && req.user.role != 'employee') {
 		return res
 			.status(403)
 			.json({ message: "ممنوع الوصول. لا يمكن الحصول على طلبات المستخدمين الآخرين." })
