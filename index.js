@@ -32,6 +32,7 @@ app.use('/api/comments', require('./routes/commentRoutes'))
 app.use('/api/ratings', require('./routes/ratingRoutes'))
 app.use('/api/orders', require('./routes/orderRoutes'))
 app.use('/api/carts', require('./routes/cartRoutes'))
+app.use('/api/clients', require('./routes/clientRoutes'))
 
 // not found routes error handler
 app.use(notFound)
