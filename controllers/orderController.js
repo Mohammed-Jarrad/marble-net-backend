@@ -12,9 +12,7 @@ const { Cart } = require('../models/cart')
 module.exports.createOrder = asyncHandler(async (req, res) => {
 	const { user, products, userPhone, shippingAddress, notes } = req.body
 	if (req.user.id.toString() != user) {
-		return res
-			.status(403)
-			.json({ message: "ممنوع الوصول. المستخدم يستطيع انشاء طلب لحسابه فقط." })
+		return res.status(403).json({ message: 'ممنوع الوصول. المستخدم يستطيع انشاء طلب لحسابه فقط.' })
 	}
 	const order = await Order.create({
 		user,
@@ -45,11 +43,7 @@ module.exports.getOrderById = asyncHandler(async (req, res) => {
 	if (!order) {
 		return res.status(404).json({ message: 'الطلب غير موجود.' })
 	}
-	if (
-		req.user.id !== order.user._id.toString() &&
-		req.user.role !== 'admin' &&
-		req.user.role !== 'employee'
-	) {
+	if (req.user.id.toString() !== order.user._id.toString() && req.user.role !== 'admin' && req.user.role !== 'employee') {
 		return res.status(403).json({ message: 'ممنوع الوصول. فقط صاحب الطلب او الادمن او الموظف.' })
 	}
 	res.status(200).json(order)
@@ -65,9 +59,7 @@ module.exports.getOrderById = asyncHandler(async (req, res) => {
 module.exports.getOrdersForUser = asyncHandler(async (req, res) => {
 	const userId = req.params.id
 	if (req.user.id.toString() != userId && req.user.role != 'admin' && req.user.role != 'employee') {
-		return res
-			.status(403)
-			.json({ message: "ممنوع الوصول. لا يمكن الحصول على طلبات المستخدمين الآخرين." })
+		return res.status(403).json({ message: 'ممنوع الوصول. لا يمكن الحصول على طلبات المستخدمين الآخرين.' })
 	}
 	const { status } = req.query
 	const filter = { user: userId }

@@ -5,7 +5,7 @@ const {
 	updateOrderStatus,
 	getAllOrders,
 	deleteOrder,
-    updateOrderNote,
+	updateOrderNote,
 } = require('../controllers/orderController')
 const verifyObjectId = require('../middlewares/verifyObjectId')
 const { verifyToken, verifyAdminOrEmployee } = require('../middlewares/verifyRole')
@@ -13,9 +13,7 @@ const { verifyToken, verifyAdminOrEmployee } = require('../middlewares/verifyRol
 const router = require('express').Router()
 
 // /api/orders
-router.route('/')
-    .post(verifyToken, createOrder)
-    .get(verifyAdminOrEmployee, getAllOrders)
+router.route('/').post(verifyToken, createOrder).get(verifyAdminOrEmployee, getAllOrders)
 
 // /api/orders/:id
 router
@@ -23,7 +21,7 @@ router
 	.get(verifyObjectId, verifyToken, getOrderById)
 	.delete(verifyObjectId, verifyAdminOrEmployee, deleteOrder)
 
-// /api/orders/user/:id 
+// /api/orders/user/:id
 router.route('/user/:id').get(verifyObjectId, verifyToken, getOrdersForUser)
 
 // /api/orders/update-status/:id
